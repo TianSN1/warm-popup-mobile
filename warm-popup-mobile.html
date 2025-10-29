@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>温馨提示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .tip-window {
+            position: fixed;
+            width: 250px;
+            min-height: 100px;
+            background: lightpink;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            text-align: center;
+            z-index: 1000;
+            transition: transform 0.3s, opacity 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .tip-window:hover {
+            transform: scale(1.05);
+        }
+        
+        .tip-text {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #333;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        
+        .close-btn {
+            padding: 6px 16px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
+            font-size: 14px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .close-btn:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+        
+        .close-btn:active {
+            transform: translateY(0);
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #4a6fa5;
+            margin-bottom: 10px;
+        }
+        
+        .instructions {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .control-btn {
+            padding: 10px 20px;
+            background: #4a6fa5;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .control-btn:hover {
+            background: #3a5a80;
+            transform: translateY(-2px);
+        }
+        
+        .counter {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+            color: #4a6fa5;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 600px) {
+            .tip-window {
+                width: 220px;
+            }
+            
+            .tip-text {
+                font-size: 16px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>温馨提示小助手</h1>
+        <p>点击下方按钮开始接收温馨提醒</p>
+    </div>
+    
+    <div class="instructions">
+        <p>这个页面会随机显示温馨的提示消息，每个提示窗口会：</p>
+        <ul style="margin: 10px 0 10px 20px;">
+            <li>随机出现在屏幕上的不同位置</li>
+            <li>拥有随机选择的背景颜色</li>
+            <li>显示一条随机的温馨提醒</li>
+            <li>10秒后自动消失，或可手动关闭</li>
+        </ul>
+    </div>
+    
+    <div class="controls">
+        <button class="control-btn" id="startBtn">开始显示弹窗</button>
+        <button class="control-btn" id="stopBtn">停止生成弹窗</button>
+        <button class="control-btn" id="closeAllBtn">关闭所有弹窗</button>
+    </div>
+    
+    <div class="counter">
+        已创建弹窗: <span id="counter">0</span>
+    </div>
+
+    <script>
+        // 温馨提示语列表
+        const tips = [
+            '多喝水哦~', '保持微笑呀', '每天都要元气满满', '记得吃水果', 
+            '保持好心情', '好好爱自己', '我想你了', '梦想成真',
+            '期待下一次见面', '金榜题名', '顺顺利利', '早点休息', 
+            '愿所有烦恼都消失', '别熬夜', '今天过得开心嘛', '天冷了多穿衣服',
+            '记得按时吃饭', '你是最棒的', '今天也要加油', '记得微笑',
+            '保持乐观心态', '一切都会好起来', '珍惜当下', '感恩每一天',
+            '相信自己', '坚持就是胜利', '放松一下', '享受生活',
+            '保持好奇心', '学习新知识', '帮助他人', '传递正能量'
+        ];
+        
+        // 背景颜色列表
+        const bgColors = [
+            'lightpink', 'skyblue', 'lightgreen', 'lavender', 
+            'lightyellow', 'plum', 'coral', 'bisque', 
+            'aquamarine', 'mistyrose', 'honeydew', 
+            'lavenderblush', 'oldlace', 'lightcyan', 'thistle'
+        ];
+        
+        let windowCounter = 0;
+        let isCreatingWindows = false;
+        let creationInterval;
+        
+        // 更新计数器显示
+        function updateCounter() {
+            document.getElementById('counter').textContent = windowCounter;
+        }
+        
+        // 创建温馨提示窗口
+        function createTipWindow() {
+            // 随机选择提示语和背景颜色
+            const tip = tips[Math.floor(Math.random() * tips.length)];
+            const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
+            
+            // 获取屏幕尺寸
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            
+            // 计算随机位置（确保窗口完全显示在屏幕内）
+            const windowWidth = 250;
+            const windowHeight = 120;
+            const maxX = Math.max(1, screenWidth - windowWidth);
+            const maxY = Math.max(1, screenHeight - windowHeight);
+            const x = Math.floor(Math.random() * maxX);
+            const y = Math.floor(Math.random() * maxY);
+            
+            // 创建窗口元素
+            const tipWindow = document.createElement('div');
+            tipWindow.className = 'tip-window';
+            tipWindow.style.left = `${x}px`;
+            tipWindow.style.top = `${y}px`;
+            tipWindow.style.backgroundColor = bgColor;
+            
+            // 添加内容
+            tipWindow.innerHTML = `
+                <div class="tip-text">${tip}</div>
+                <button class="close-btn">关闭</button>
+            `;
+            
+            // 添加到页面
+            document.body.appendChild(tipWindow);
+            windowCounter++;
+            updateCounter();
+            
+            // 添加关闭按钮事件
+            const closeBtn = tipWindow.querySelector('.close-btn');
+            closeBtn.addEventListener('click', function() {
+                tipWindow.style.opacity = '0';
+                tipWindow.style.transform = 'scale(0.8)';
+                setTimeout(() => {
+                    if (tipWindow.parentNode) {
+                        tipWindow.parentNode.removeChild(tipWindow);
+                        windowCounter--;
+                        updateCounter();
+                    }
+                }, 300);
+            });
+            
+            // 10秒后自动关闭
+            setTimeout(() => {
+                if (tipWindow.parentNode) {
+                    tipWindow.style.opacity = '0';
+                    tipWindow.style.transform = 'scale(0.8)';
+                    setTimeout(() => {
+                        if (tipWindow.parentNode) {
+                            tipWindow.parentNode.removeChild(tipWindow);
+                            windowCounter--;
+                            updateCounter();
+                        }
+                    }, 300);
+                }
+            }, 10000);
+        }
+        
+        // 开始创建弹窗
+        function startCreatingWindows() {
+            if (isCreatingWindows) return;
+            
+            isCreatingWindows = true;
+            
+            // 先创建一个弹窗
+            createTipWindow();
+            
+            // 然后每隔一段时间创建一个新弹窗
+            creationInterval = setInterval(() => {
+                if (isCreatingWindows) {
+                    createTipWindow();
+                }
+            }, 500); // 每0.5秒创建一个新弹窗
+        }
+        
+        // 停止创建弹窗
+        function stopCreatingWindows() {
+            isCreatingWindows = false;
+            clearInterval(creationInterval);
+        }
+        
+        // 关闭所有弹窗
+        function closeAllWindows() {
+            const tipWindows = document.querySelectorAll('.tip-window');
+            tipWindows.forEach(window => {
+                window.style.opacity = '0';
+                window.style.transform = 'scale(0.8)';
+                setTimeout(() => {
+                    if (window.parentNode) {
+                        window.parentNode.removeChild(window);
+                    }
+                }, 300);
+            });
+            
+            windowCounter = 0;
+            updateCounter();
+        }
+        
+        // 添加按钮事件监听
+        document.getElementById('startBtn').addEventListener('click', startCreatingWindows);
+        document.getElementById('stopBtn').addEventListener('click', stopCreatingWindows);
+        document.getElementById('closeAllBtn').addEventListener('click', closeAllWindows);
+        
+        // 初始创建一个弹窗
+        setTimeout(createTipWindow, 1000);
+    </script>
+</body>
+</html>
